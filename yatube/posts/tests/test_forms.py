@@ -136,11 +136,10 @@ class CommentCreationTest(TestCase):
             data=form_data,
             follow=True
         )
-        self.assertTrue(
-            Comment.objects.filter(
-                text='Тестовый комментарий',
-                author=self.user.id,
-                post=post.id,
+        self.assertTrue(Comment.objects.filter(
+            text='Тестовый комментарий',
+            author=self.user.id,
+            post=post.id,
             ).exists()
         )
         self.assertTrue(

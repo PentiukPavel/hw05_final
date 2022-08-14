@@ -137,15 +137,18 @@ def follow_index(request) -> HttpResponse:
 @login_required
 def profile_follow(request, username) -> HttpResponse:
     """Follow an author"""
+    author = User.objects.get(username=username)
+    if request.user == author:
+        return redirect('posts:profile', username)
     favorite_authors = Follow.objects.filter(
         user=request.user,
-        author=User.objects.get(username=username)
+        author=author
     )
     if favorite_authors.exists():
         return redirect('posts:profile', username)
     favorite_author = Follow.objects.create(
         user=request.user,
-        author=User.objects.get(username=username),
+        author=author,
     )
     favorite_author.save()
     return redirect('posts:profile', username)
