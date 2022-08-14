@@ -114,9 +114,10 @@ class PostPagesTest(TestCase):
 
     def test_group_list_page_show_correct_context(self):
         """Правильный контекст страницы группы."""
-        response = self.authorized_client.get(reverse(
-            'posts:group_posts',
-            kwargs={'slug': 'test-slug'}
+        response = self.authorized_client.get(
+            reverse(
+                'posts:group_posts',
+                kwargs={'slug': 'test-slug'}
             )
         )
         group = response.context['page_obj'][0]
