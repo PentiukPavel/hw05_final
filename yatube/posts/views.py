@@ -20,7 +20,7 @@ def index(request) -> HttpResponse:
 
 
 def group_posts(request, slug: str) -> HttpResponse:
-    """Retrive posts of certain group"""
+    """Retrive posts of certain group."""
     template = 'posts/group_list.html'
     group = get_object_or_404(Group, slug=slug)
     posts = group.posts.all().select_related('author')
@@ -33,7 +33,7 @@ def group_posts(request, slug: str) -> HttpResponse:
 
 
 def profile(request, username: str) -> HttpResponse:
-    """Retrive posts of certain author"""
+    """Retrive posts of certain author."""
     author = get_object_or_404(User, username=username)
     following = False
     if request.user.is_authenticated:
@@ -54,18 +54,13 @@ def profile(request, username: str) -> HttpResponse:
 
 
 def post_detail(request, post_id: int) -> HttpResponse:
-    """Retrive certain post"""
+    """Retrive certain post."""
     post = get_object_or_404(Post, pk=post_id)
-    comment_form = CommentForm(request.POST or None)
-    comments = post.comments.all()
-    post_text_preview = f'Пост {post.text[:30]}...'
+    comment_form = CommentForm()
     posts_quantity = post.author.posts.all().count()
     context = {
-        'post_text_preview': post_text_preview,
         'post': post,
         'posts_quantity': posts_quantity,
-        'post_id': post_id,
-        'comments': comments,
         'form': comment_form,
     }
     return render(request, 'posts/post_detail.html', context)
@@ -73,7 +68,7 @@ def post_detail(request, post_id: int) -> HttpResponse:
 
 @login_required
 def post_create(request) -> HttpResponse:
-    """New post creation"""
+    """New post creation."""
     form = PostForm(
         request.POST or None,
         files=request.FILES or None,
@@ -89,7 +84,7 @@ def post_create(request) -> HttpResponse:
 
 @login_required
 def post_edit(request, post_id: int) -> HttpResponse:
-    """Post changing"""
+    """Post changing."""
     post = get_object_or_404(Post, pk=post_id)
     if post.author != request.user:
         return redirect('posts:post_detail', post_id)
@@ -107,7 +102,7 @@ def post_edit(request, post_id: int) -> HttpResponse:
 
 @login_required
 def add_comment(request, post_id: int) -> HttpResponse:
-    """Comment creation"""
+    """Comment creation."""
     post = get_object_or_404(Post, pk=post_id)
     form = CommentForm(request.POST or None)
     if form.is_valid():
@@ -120,13 +115,8 @@ def add_comment(request, post_id: int) -> HttpResponse:
 
 @login_required
 def follow_index(request) -> HttpResponse:
-    """Retrive posts of favorite authors"""
-    favorite_authors = []
-    for obj in request.user.follower.all():
-        favorite_authors.append(obj.author)
-    posts = Post.objects.filter(
-        author__in=favorite_authors
-    ).select_related('group', 'author')
+    """Retrive posts of favorite authors."""
+    posts = Post.objects.filter(author__following__user=request.user)
     page_obj = page_counter(request, posts)
     context = {
         'page_obj': page_obj,
@@ -136,29 +126,27 @@ def follow_index(request) -> HttpResponse:
 
 @login_required
 def profile_follow(request, username) -> HttpResponse:
-    """Follow an author"""
-    author = User.objects.get(username=username)
-    if request.user == author:
-        return redirect('posts:profile', username)
+    """Follow an author."""
+    author = get_object_or_404(User, username=username)
     favorite_authors = Follow.objects.filter(
         user=request.user,
         author=author
     )
-    if favorite_authors.exists():
+    if favorite_authors.exists() or request.user == author:
         return redirect('posts:profile', username)
-    favorite_author = Follow.objects.create(
+    Follow.objects.create(
         user=request.user,
         author=author,
     )
-    favorite_author.save()
     return redirect('posts:profile', username)
 
 
 @login_required
 def profile_unfollow(request, username):
-    subscription = Follow.objects.get(
+    """Unfollow an author."""
+    author = get_object_or_404(User, username=username)
+    Follow.objects.get(
         user=request.user,
-        author=User.objects.get(username=username),
-    )
-    subscription.delete()
+        author=author,
+    ).delete()
     return redirect('posts:profile', username)

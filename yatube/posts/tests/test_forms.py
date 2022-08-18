@@ -20,14 +20,12 @@ class PostFormTest(TestCase):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
-        cls.user = User.objects.create_user(username='Vasya', id=100)
+        cls.user = User.objects.create_user(username='Vasya')
         cls.post = Post.objects.create(
-            id=333,
             text='Пост до редактирования',
             author=cls.user,
         )
-        cls.gorup = Group.objects.create(
-            id=444,
+        cls.group = Group.objects.create(
             title='Та самая группа',
             description='Это та самая группа',
             slug='that_is_slug'
@@ -44,7 +42,7 @@ class PostFormTest(TestCase):
         self.authorithed_client.force_login(self.user)
 
     def test_post_creation(self):
-        """Пост создается."""
+        """Post creation."""
         post_count = Post.objects.count()
         small_gif = (
             b'\x47\x49\x46\x38\x39\x61\x02\x00'
@@ -61,7 +59,7 @@ class PostFormTest(TestCase):
         )
         form_data = {
             'text': 'Тестовый пост',
-            'group': 444,
+            'group': self.group.id,
             'image': uploaded,
         }
         response = self.authorithed_client.post(
@@ -73,7 +71,7 @@ class PostFormTest(TestCase):
             response,
             reverse(
                 'posts:profile',
-                kwargs={'username': 'Vasya'},
+                kwargs={'username': self.user.username},
             )
         )
         self.assertEqual(Post.objects.count(), post_count + 1)
@@ -86,22 +84,22 @@ class PostFormTest(TestCase):
         self.assertTrue(
             Post.objects.filter(
                 text='Тестовый пост',
-                author=100,
-                group=444,
+                author=self.user.id,
+                group=self.group.id,
                 image='posts/small.gif'
             ).exists()
         )
 
     def test_post_edition(self):
-        """Пост редактируется."""
+        """Post edition."""
         self.authorithed_client.post(
             reverse(
                 'posts:post_edit',
-                kwargs={'post_id': 333}
+                kwargs={'post_id': self.post.id}
             ),
             data={'text': 'Пост после редактирования'}
         )
-        changed_post = Post.objects.get(id=333)
+        changed_post = Post.objects.get(id=self.post.id)
         self.assertEqual(changed_post.text, 'Пост после редактирования')
 
 
@@ -112,9 +110,8 @@ class CommentCreationTest(TestCase):
         cls.user = User.objects.create_user(username='R2D2')
         cls.user2 = User.objects.create_user(username='Luke')
         cls.post = Post.objects.create(
-            id=78,
             text='Тестовый пост',
-            author=cls.user2
+            author=cls.user2,
         )
 
     def setUp(self):
@@ -122,7 +119,7 @@ class CommentCreationTest(TestCase):
         self.authorized_client.force_login(self.user)
 
     def test_comment_creation(self):
-        """Создание комментария"""
+        """Comment creation."""
         post = self.post
         count_comments = post.comments.count()
         form_data = {
@@ -131,7 +128,7 @@ class CommentCreationTest(TestCase):
         self.authorized_client.post(
             reverse(
                 'posts:add_comment',
-                kwargs={'post_id': 78}
+                kwargs={'post_id': self.post.id}
             ),
             data=form_data,
             follow=True
@@ -140,10 +137,10 @@ class CommentCreationTest(TestCase):
             Comment.objects.filter(
                 text='Тестовый комментарий',
                 author=self.user.id,
-                post=post.id,
+                post=self.post.id,
             ).exists()
         )
         self.assertTrue(
-            Comment.objects.filter(post=post.id).count(),
+            Comment.objects.filter(post=self.post.id).count(),
             count_comments + 1
         )

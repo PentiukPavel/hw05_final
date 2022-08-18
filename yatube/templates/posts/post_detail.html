@@ -2,7 +2,7 @@
 {% load thumbnail %}
 {% load user_filters %}
 {% block title %}
-    {{ post_text_preview }}
+    {{ post.text|truncatechars:30 }}
 {% endblock %}
 {% block content %}
 <div class="container py-5">
@@ -43,7 +43,7 @@
         {{ post.text }}
       </p>
       {% if request.user == post.author %}
-        <a class="btn btn-primary" href="{% url 'posts:post_edit' post_id %}">
+        <a class="btn btn-primary" href="{% url 'posts:post_edit' post.id %}">
           Редактировать запись
         </a>
       {% endif %}
@@ -61,7 +61,7 @@
           </div>
         </div>
       {% endif %}
-      {% for comment in comments %}
+      {% for comment in post.comments.all %}
         <div class="media mb-4">
           <div class="media-body">
             <h5 class="mt-0">
