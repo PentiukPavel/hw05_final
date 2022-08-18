@@ -100,7 +100,10 @@ class PostsURLTests(TestCase):
 
     def test_task_list_url_redirect_authorized_client_on_post(self):
         """Page /posts/.../edit/ redirect user not author to post page."""
-        response = self.authorized_client2.get(f'/posts/{self.post.id}/edit/', follow=True)
+        response = self.authorized_client2.get(
+            f'/posts/{self.post.id}/edit/',
+            follow=True
+        )
         self.assertRedirects(
             response, f'/posts/{self.post.id}/'
         )

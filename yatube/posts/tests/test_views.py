@@ -272,7 +272,7 @@ class PostCreateTest(TestCase):
         self.assertEqual(post.group.id, self.group2.id)
 
     def test_post_in_ceratain_group(self):
-        """Post appears at the page of it's group, not at the page of others."""
+        """Post appears at the page of it's group."""
         self.authorized_client.post(
             reverse('posts:post_create'),
             {'text': 'Тестовый пост', 'group': self.group2.id}
@@ -330,7 +330,6 @@ class CommentCreationTest(TestCase):
             Comment.objects.filter(post=post.id).count(),
             count_comments + 1
         )
-
 
     def test_redirect_after_post_creation(self):
         """Redirection after comment creation test."""
