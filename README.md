@@ -1,3 +1,63 @@
 # hw05_final
 
-[![CI](https://github.com/yandex-praktikum/hw05_final/actions/workflows/python-app.yml/badge.svg?branch=master)](https://github.com/yandex-praktikum/hw05_final/actions/workflows/python-app.yml)
+# «Продуктовый помощник»
+Cоциальная сеть для публикации личных дневников. На сайте можно создать свою страницу и размещать записи. Пользователи сайта могут заходить на чужие страницы, подписываться на авторов и комментировать их записи. 
+ 
+## Инструкции для развертывания проекта на локальном сервере
+
+### 1) Скачать проект
+
+Клонировать проект с github. Ссылка для клонирования: git@github.com:PentiukPavel/hw05_final.git <br>
+
+
+### 2) Создать виртуальное окружение
+
+В корневой папка создать виртуальное окружение:
+
+```
+py -3 -m venv venv
+```
+
+Активировать виртуальное окружение:
+
+```
+source venv/Scripts/activate
+```
+
+Установить зависимости из файла requirements.txt:
+
+```
+pip install -r requirements.txt
+```
+
+Создать файл .env, в котором в переменной SECRET разместить секретный ключа проекта.<br>
+
+
+### 3) Запустить проект
+
+В папке с файлом manage.py (yatube) выполнить следующие команды для выполнения миграций:
+
+```
+python manage.py makemigrations
+python manage.py migrate
+```
+
+Создать суперюзера:
+
+```
+python manage.py createsuperuser
+```
+
+Запустить проект:
+
+```
+python manage.py runserver
+```
+<br>
+
+## Системные требования
+### Python==3.7
+
+## Стек
+### Django
+### SQLite
